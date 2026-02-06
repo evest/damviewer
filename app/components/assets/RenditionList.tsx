@@ -21,23 +21,6 @@ export function RenditionList({ renditions }: RenditionListProps) {
       </h2>
       <Separator className="my-2" />
 
-      {selected && (
-        <div className="mb-4">
-          <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
-            <Image
-              src={selected.Url}
-              alt={selected.Name}
-              fill
-              className="object-contain"
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
-          </div>
-          <p className="mt-1 text-center text-sm text-muted-foreground">
-            {selected.Name} ({selected.Width}x{selected.Height})
-          </p>
-        </div>
-      )}
-
       <div className="flex gap-2 overflow-x-auto pb-2">
         {renditions.map((rendition) => (
           <button
@@ -66,6 +49,23 @@ export function RenditionList({ renditions }: RenditionListProps) {
           </button>
         ))}
       </div>
+
+      {selected && (
+        <div className="mt-4">
+          <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
+            <Image
+              src={selected.Url}
+              alt={selected.Name}
+              fill
+              className="object-contain"
+              sizes="(max-width: 768px) 100vw, 50vw"
+            />
+          </div>
+          <p className="mt-1 text-center text-sm text-muted-foreground">
+            {selected.Name} ({selected.Width}x{selected.Height})
+          </p>
+        </div>
+      )}
     </div>
   );
 }
