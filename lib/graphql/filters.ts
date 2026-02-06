@@ -4,10 +4,29 @@ const TYPE_PREFIXES: Record<string, string[]> = {
   raw: ["application/", "text/"],
 };
 
+function getDateFrom(created: string): string | undefined {
+  const now = new Date();
+  switch (created) {
+    case "today":
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+    case "week":
+      return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    case "month":
+      return new Date(now.getFullYear(), now.getMonth() - 1, now.getDate()).toISOString();
+    case "3months":
+      return new Date(now.getFullYear(), now.getMonth() - 3, now.getDate()).toISOString();
+    case "6months":
+      return new Date(now.getFullYear(), now.getMonth() - 6, now.getDate()).toISOString();
+    default:
+      return undefined;
+  }
+}
+
 export function buildWhereClause(params: {
   q?: string;
   type?: string;
   tags?: string;
+  created?: string;
 }): Record<string, unknown> | undefined {
   const conditions: Record<string, unknown>[] = [];
 
@@ -37,6 +56,13 @@ export function buildWhereClause(params: {
     const tagNames = params.tags.split(",").filter(Boolean);
     if (tagNames.length > 0) {
       conditions.push({ Tags: { Name: { in: tagNames } } });
+    }
+  }
+
+  if (params.created) {
+    const dateFrom = getDateFrom(params.created);
+    if (dateFrom) {
+      conditions.push({ DateCreated: { gte: dateFrom } });
     }
   }
 

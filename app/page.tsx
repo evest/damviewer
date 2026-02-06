@@ -40,6 +40,7 @@ export default async function Home({
     q: typeof params.q === "string" ? params.q : undefined,
     type: typeof params.type === "string" ? params.type : undefined,
     tags: typeof params.tags === "string" ? params.tags : undefined,
+    created: typeof params.created === "string" ? params.created : undefined,
   });
 
   const [assetsData, facetsData] = await Promise.all([

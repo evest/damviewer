@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
     q: searchParams.get("q") ?? undefined,
     type: searchParams.get("type") ?? undefined,
     tags: searchParams.get("tags") ?? undefined,
+    created: searchParams.get("created") ?? undefined,
   });
 
   try {

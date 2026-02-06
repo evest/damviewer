@@ -1,36 +1,92 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DAM Viewer
+
+A Digital Asset Management viewer for Optimizely DAM, built with Next.js. Browse, search, and filter assets from the Alloy Tours DAM library through a responsive web interface.
+
+## Features
+
+- **Browse** assets in a responsive grid (images, videos, raw files)
+- **Search** with debounced full-text search
+- **Filter** by asset type, tags, and created date
+- **Detail pages** with full metadata, labels, custom fields, and renditions
+- **Image optimization** via CDN-side resizing (custom Next.js image loader)
+- **Server-side data fetching** keeps the Content Graph auth token secret
+
+## Tech Stack
+
+- Next.js 16 (App Router, server components)
+- React 19
+- TypeScript 5.9
+- Tailwind CSS 4
+- shadcn/ui (New York style)
+- Optimizely Content Graph (GraphQL)
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Node.js 18+
+- npm
+
+### Setup
+
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Copy the environment file and add your Content Graph credentials:
+   ```bash
+   cp .env.example .env.local
+   ```
+4. Start the dev server:
+   ```bash
+   npm run dev
+   ```
+5. Open [http://localhost:3000](http://localhost:3000)
+
+### Environment Variables
+
+| Variable | Description |
+|---|---|
+| `CONTENT_GRAPH_ENDPOINT` | Optimizely Content Graph endpoint URL |
+| `CONTENT_GRAPH_AUTH_TOKEN` | Authentication token for Content Graph |
+
+## Scripts
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Start development server |
+| `npm run build` | Production build |
+| `npm run start` | Start production server |
+| `npm run lint` | Run ESLint |
+
+## Project Structure
+
+```
+app/
+  page.tsx                    # Browse page (server component)
+  loading.tsx                 # Browse skeleton
+  error.tsx                   # Error boundary
+  assets/[id]/page.tsx        # Asset detail page
+  api/assets/route.ts         # Assets list API proxy
+  api/assets/[id]/route.ts    # Asset detail API proxy
+  components/
+    assets/                   # AssetCard, AssetGrid, AssetDetail, RenditionList
+    layout/                   # Header, Sidebar
+    ui/                       # SearchInput, Pagination, DamImage
+lib/
+  graphql/client.ts           # Server-only GraphQL fetch wrapper
+  graphql/queries.ts          # GraphQL query strings
+  graphql/filters.ts          # Where clause builder
+  types/asset.ts              # TypeScript types
+  constants.ts                # Helpers (pagination, MIME types, image loader)
+components/ui/                # shadcn/ui components
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Architecture
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**Initial page load**: Server component fetches data from Content Graph via `graphqlFetch()` and renders HTML directly.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**Client interactions** (search, filter, paginate): URL search params change triggers a server component re-render with fresh data. The auth token never reaches the client.
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Pagination uses Content Graph's cursor-based system. Filters support combining type, tags, date range, and full-text search via `_and`/`_or` GraphQL clauses.
