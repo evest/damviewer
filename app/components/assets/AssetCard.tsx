@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FileVideo, FileText } from "lucide-react";
 import type { Asset } from "@/lib/types/asset";
-import { isImage, isVideo, formatDate } from "@/lib/constants";
+import { isImage, isVideo, formatDate, damLoader } from "@/lib/constants";
 
 interface AssetCardProps {
   asset: Asset;
@@ -21,6 +21,7 @@ export function AssetCard({ asset }: AssetCardProps) {
         <div className="relative aspect-square bg-muted">
           {hasUrl && isImage(asset.MimeType) ? (
             <Image
+              loader={damLoader}
               src={asset.Url as string}
               alt={(asset as { AltText?: string }).AltText || asset.Title || "Asset"}
               fill

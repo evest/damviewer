@@ -1,10 +1,10 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { graphqlFetch } from "@/lib/graphql/client";
 import { ASSET_DETAIL_QUERY } from "@/lib/graphql/queries";
 import { AssetDetail } from "@/app/components/assets/AssetDetail";
 import { RenditionList } from "@/app/components/assets/RenditionList";
+import { DamImage } from "@/app/components/ui/DamImage";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Download } from "lucide-react";
 import type { Asset, ImageAsset, VideoAsset, RawFileAsset } from "@/lib/types/asset";
@@ -71,7 +71,7 @@ export default async function AssetPage({
           <div className="overflow-hidden rounded-lg border bg-muted">
             {imageAsset ? (
               <div className="relative aspect-video">
-                <Image
+                <DamImage
                   src={imageAsset.Url}
                   alt={imageAsset.AltText || imageAsset.Title || "Image"}
                   fill

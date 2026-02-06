@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
+import { damLoader } from "@/lib/constants";
 import type { Rendition } from "@/lib/types/asset";
 
 interface RenditionListProps {
@@ -36,6 +37,7 @@ export function RenditionList({ renditions }: RenditionListProps) {
           >
             <div className="relative h-16 w-20 overflow-hidden rounded bg-muted">
               <Image
+                loader={damLoader}
                 src={rendition.Url}
                 alt={rendition.Name}
                 fill
@@ -54,6 +56,7 @@ export function RenditionList({ renditions }: RenditionListProps) {
         <div className="mt-4">
           <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
             <Image
+              loader={damLoader}
               src={selected.Url}
               alt={selected.Name}
               fill

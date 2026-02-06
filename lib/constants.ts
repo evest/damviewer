@@ -20,6 +20,12 @@ export function formatFileSize(bytes: number): string {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 }
 
+export function damLoader({ src, width }: { src: string; width: number }): string {
+  const u = new URL(src);
+  u.searchParams.set("width", String(width));
+  return u.toString();
+}
+
 export function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString("en-US", {
     year: "numeric",
