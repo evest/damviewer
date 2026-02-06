@@ -4,6 +4,7 @@ import { ASSETS_LIST_QUERY, ASSETS_FACETS_QUERY } from "@/lib/graphql/queries";
 import { AssetGrid } from "@/app/components/assets/AssetGrid";
 import { Sidebar } from "@/app/components/layout/Sidebar";
 import { PAGE_SIZE } from "@/lib/constants";
+import { buildWhereClause } from "@/lib/graphql/filters";
 import type { Asset, AssetListResponse, FacetValue } from "@/lib/types/asset";
 
 interface AssetsQueryResponse {
@@ -26,39 +27,6 @@ interface FacetsQueryResponse {
   };
 }
 
-function buildWhere(searchParams: Record<string, string | string[] | undefined>) {
-  const where: Record<string, unknown> = {};
-
-  const q = typeof searchParams.q === "string" ? searchParams.q : undefined;
-  if (q) {
-    where._fulltext = { match: q };
-  }
-
-  const type = typeof searchParams.type === "string" ? searchParams.type : undefined;
-  if (type) {
-    const types = type.split(",").filter(Boolean);
-    const prefixes: string[] = [];
-    for (const t of types) {
-      if (t === "image") prefixes.push("image/");
-      else if (t === "video") prefixes.push("video/");
-      else if (t === "raw") prefixes.push("application/", "text/");
-    }
-    if (prefixes.length > 0) {
-      where.MimeType = { in: prefixes };
-    }
-  }
-
-  const tags = typeof searchParams.tags === "string" ? searchParams.tags : undefined;
-  if (tags) {
-    const tagNames = tags.split(",").filter(Boolean);
-    if (tagNames.length > 0) {
-      where.Tags = { Name: { in: tagNames } };
-    }
-  }
-
-  return Object.keys(where).length > 0 ? where : undefined;
-}
-
 export default async function Home({
   searchParams,
 }: {
@@ -70,7 +38,11 @@ export default async function Home({
     10
   );
 
-  const where = buildWhere(params);
+  const where = buildWhereClause({
+    q: typeof params.q === "string" ? params.q : undefined,
+    type: typeof params.type === "string" ? params.type : undefined,
+    tags: typeof params.tags === "string" ? params.tags : undefined,
+  });
 
   const [assetsData, facetsData] = await Promise.all([
     graphqlFetch<AssetsQueryResponse>(ASSETS_LIST_QUERY, {
