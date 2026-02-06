@@ -6,9 +6,10 @@ import type { Asset, AssetListResponse } from "@/lib/types/asset";
 
 interface AssetGridProps {
   data: AssetListResponse;
+  page: number;
 }
 
-export function AssetGrid({ data }: AssetGridProps) {
+export function AssetGrid({ data, page }: AssetGridProps) {
   if (data.items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -25,7 +26,7 @@ export function AssetGrid({ data }: AssetGridProps) {
           <AssetCard key={asset.Id} asset={asset} />
         ))}
       </div>
-      <Pagination total={data.total} />
+      <Pagination total={data.total} cursor={data.cursor} page={page} />
     </div>
   );
 }

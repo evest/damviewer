@@ -33,10 +33,8 @@ export default async function Home({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const skip = parseInt(
-    typeof params.skip === "string" ? params.skip : "0",
-    10
-  );
+  const cursor = typeof params.cursor === "string" ? params.cursor : undefined;
+  const page = parseInt(typeof params.page === "string" ? params.page : "1", 10);
 
   const where = buildWhereClause({
     q: typeof params.q === "string" ? params.q : undefined,
@@ -47,7 +45,7 @@ export default async function Home({
   const [assetsData, facetsData] = await Promise.all([
     graphqlFetch<AssetsQueryResponse>(ASSETS_LIST_QUERY, {
       limit: PAGE_SIZE,
-      skip,
+      cursor: cursor || undefined,
       where,
       orderBy: { DateCreated: "DESC" },
     }),
@@ -68,7 +66,7 @@ export default async function Home({
         <Sidebar tags={tags} />
       </Suspense>
       <main className="flex-1 overflow-auto p-4 sm:p-6">
-        <AssetGrid data={data} />
+        <AssetGrid data={data} page={page} />
       </main>
     </div>
   );

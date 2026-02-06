@@ -19,7 +19,8 @@ export function SearchInput() {
     } else {
       params.delete("q");
     }
-    params.delete("skip");
+    params.delete("page");
+    params.delete("cursor");
     router.push(`/?${params.toString()}`);
   }
 

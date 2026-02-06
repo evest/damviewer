@@ -1,6 +1,6 @@
 export const ASSETS_LIST_QUERY = `
-  query AssetsList($limit: Int, $skip: Int, $where: AssetWhereInput, $orderBy: AssetOrderByInput) {
-    Asset(limit: $limit, skip: $skip, where: $where, orderBy: $orderBy) {
+  query AssetsList($limit: Int, $cursor: String, $where: AssetWhereInput, $orderBy: AssetOrderByInput) {
+    Asset(limit: $limit, cursor: $cursor, where: $where, orderBy: $orderBy) {
       total
       cursor
       items {

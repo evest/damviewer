@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
 
   const limit = Math.min(Math.max(parseInt(searchParams.get("limit") ?? String(PAGE_SIZE), 10), 1), 100);
-  const skip = Math.max(parseInt(searchParams.get("skip") ?? "0", 10), 0);
+  const cursor = searchParams.get("cursor") ?? undefined;
 
   const where = buildWhereClause({
     q: searchParams.get("q") ?? undefined,
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
   try {
     const data = await graphqlFetch<AssetsQueryResponse>(ASSETS_LIST_QUERY, {
       limit,
-      skip,
+      cursor: cursor || undefined,
       where,
       orderBy: { DateCreated: "DESC" },
     });

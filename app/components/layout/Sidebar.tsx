@@ -39,7 +39,8 @@ function SidebarContent({ tags }: SidebarProps) {
     } else {
       params.delete(key);
     }
-    params.delete("skip");
+    params.delete("page");
+    params.delete("cursor");
     router.push(`/?${params.toString()}`);
   }
 
@@ -47,7 +48,8 @@ function SidebarContent({ tags }: SidebarProps) {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("type");
     params.delete("tags");
-    params.delete("skip");
+    params.delete("page");
+    params.delete("cursor");
     router.push(`/?${params.toString()}`);
   }
 

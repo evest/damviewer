@@ -7,24 +7,33 @@ import { PAGE_SIZE } from "@/lib/constants";
 
 interface PaginationProps {
   total: number;
+  cursor: string;
+  page: number;
 }
 
-export function Pagination({ total }: PaginationProps) {
+export function Pagination({ total, cursor, page }: PaginationProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const skip = parseInt(searchParams.get("skip") ?? "0", 10);
-  const start = skip + 1;
-  const end = Math.min(skip + PAGE_SIZE, total);
-  const hasPrev = skip > 0;
-  const hasNext = skip + PAGE_SIZE < total;
 
-  function navigate(newSkip: number) {
+  const start = (page - 1) * PAGE_SIZE + 1;
+  const end = Math.min(page * PAGE_SIZE, total);
+  const hasPrev = page > 1;
+  const hasNext = page * PAGE_SIZE < total;
+
+  function navigate(newPage: number, newCursor?: string) {
     const params = new URLSearchParams(searchParams.toString());
-    if (newSkip > 0) {
-      params.set("skip", String(newSkip));
-    } else {
-      params.delete("skip");
+
+    // Remove pagination params
+    params.delete("page");
+    params.delete("cursor");
+
+    if (newPage > 1) {
+      params.set("page", String(newPage));
+      if (newCursor) {
+        params.set("cursor", newCursor);
+      }
     }
+
     router.push(`/?${params.toString()}`);
   }
 
@@ -40,16 +49,24 @@ export function Pagination({ total }: PaginationProps) {
           variant="outline"
           size="sm"
           disabled={!hasPrev}
-          onClick={() => navigate(Math.max(0, skip - PAGE_SIZE))}
+          onClick={() => {
+            if (page === 2) {
+              // Going back to page 1 — no cursor needed
+              navigate(1);
+            } else {
+              // Can't go backwards with cursor pagination — go to page 1
+              navigate(1);
+            }
+          }}
         >
           <ChevronLeft className="mr-1 h-4 w-4" />
-          Previous
+          First
         </Button>
         <Button
           variant="outline"
           size="sm"
           disabled={!hasNext}
-          onClick={() => navigate(skip + PAGE_SIZE)}
+          onClick={() => navigate(page + 1, cursor)}
         >
           Next
           <ChevronRight className="ml-1 h-4 w-4" />
