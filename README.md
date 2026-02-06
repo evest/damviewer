@@ -50,6 +50,7 @@ A Digital Asset Management viewer for Optimizely DAM, built with Next.js. Browse
 |---|---|
 | `CONTENT_GRAPH_ENDPOINT` | Optimizely Content Graph endpoint URL |
 | `CONTENT_GRAPH_AUTH_TOKEN` | Authentication token for Content Graph |
+| `INCLUDE_STRUCTURED_CONTENT` | Include structured content assets in listings (default: `false`) |
 
 ## Scripts
 

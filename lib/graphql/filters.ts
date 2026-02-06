@@ -30,6 +30,10 @@ export function buildWhereClause(params: {
 }): Record<string, unknown> | undefined {
   const conditions: Record<string, unknown>[] = [];
 
+  if (process.env.INCLUDE_STRUCTURED_CONTENT !== "true") {
+    conditions.push({ MimeType: { notEq: "application/cmp+structured-content" } });
+  }
+
   if (params.q) {
     conditions.push({ _fulltext: { match: params.q } });
   }
