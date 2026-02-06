@@ -25,7 +25,6 @@ const MIME_TO_EXTENSION: Record<string, string> = {
   "application/vnd.ms-excel": "xls",
   "application/zip": "zip",
   "application/x-zip-compressed": "zip",
-  "text/plain": "txt",
   "text/csv": "csv",
   "application/cmp+structured-content": "doc",
 };
