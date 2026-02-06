@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import type { Asset, AssetField, ImageAsset, Label } from "@/lib/types/asset";
+import type { Asset, AssetField, ImageAsset, VideoAsset, Label } from "@/lib/types/asset";
 import { formatDate } from "@/lib/constants";
 
 interface AssetDetailProps {
@@ -10,7 +10,9 @@ interface AssetDetailProps {
 
 export function AssetDetail({ asset }: AssetDetailProps) {
   const imageAsset = asset.__typename === "PublicImageAsset" ? (asset as ImageAsset) : null;
+  const videoAsset = asset.__typename === "PublicVideoAsset" ? (asset as VideoAsset) : null;
   const description = "Description" in asset ? (asset as { Description: string }).Description : null;
+  const altText = imageAsset?.AltText || videoAsset?.AltText || null;
 
   return (
     <div className="space-y-6">
@@ -20,6 +22,7 @@ export function AssetDetail({ asset }: AssetDetailProps) {
         <dl className="space-y-2 text-sm">
           <DetailRow label="Title" value={asset.Title || "Untitled"} />
           {description && <DetailRow label="Description" value={description} />}
+          {altText && <DetailRow label="Alt Text" value={altText} />}
           <DetailRow label="MIME Type" value={asset.MimeType} />
           <DetailRow label="Created" value={formatDate(asset.DateCreated)} />
           <DetailRow label="Modified" value={formatDate(asset.DateModified)} />
@@ -29,7 +32,13 @@ export function AssetDetail({ asset }: AssetDetailProps) {
               value={`${imageAsset.Width} x ${imageAsset.Height}`}
             />
           )}
-          <DetailRow label="Library Path" value={asset.LibraryPath} />
+          {imageAsset?.FocalPoint?.X != null && imageAsset?.FocalPoint?.Y != null && (
+            <DetailRow
+              label="Focal Point"
+              value={`${imageAsset.FocalPoint.X}, ${imageAsset.FocalPoint.Y}`}
+            />
+          )}
+          {asset.LibraryPath && <DetailRow label="Library Path" value={asset.LibraryPath} />}
         </dl>
       </div>
 
