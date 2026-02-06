@@ -4,9 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileVideo, FileText } from "lucide-react";
+import { FileTypeIcon } from "@/app/components/ui/FileTypeIcon";
 import type { Asset } from "@/lib/types/asset";
-import { isImage, isVideo, isPreviewable, formatDate, damLoader } from "@/lib/constants";
+import { isImage, isPreviewable, formatDate, damLoader } from "@/lib/constants";
 
 interface AssetCardProps {
   asset: Asset;
@@ -28,13 +28,9 @@ export function AssetCard({ asset }: AssetCardProps) {
               className="object-cover transition-transform group-hover:scale-105"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
             />
-          ) : isVideo(asset.MimeType) && isPreviewable(asset.MimeType) ? (
-            <div className="flex h-full items-center justify-center">
-              <FileVideo className="h-12 w-12 text-muted-foreground" />
-            </div>
           ) : (
             <div className="flex h-full items-center justify-center">
-              <FileText className="h-12 w-12 text-muted-foreground" />
+              <FileTypeIcon mimeType={asset.MimeType} size={64} />
             </div>
           )}
         </div>

@@ -6,7 +6,8 @@ import { AssetDetail } from "@/app/components/assets/AssetDetail";
 import { RenditionList } from "@/app/components/assets/RenditionList";
 import { DamImage } from "@/app/components/ui/DamImage";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Download, FileText } from "lucide-react";
+import { ArrowLeft, Download } from "lucide-react";
+import { FileTypeIcon } from "@/app/components/ui/FileTypeIcon";
 import { isPreviewable } from "@/lib/constants";
 import type { Asset, ImageAsset, VideoAsset, RawFileAsset } from "@/lib/types/asset";
 
@@ -92,7 +93,7 @@ export default async function AssetPage({
               </video>
             ) : (
               <div className="flex aspect-video flex-col items-center justify-center gap-4">
-                <FileText className="h-16 w-16 text-muted-foreground" />
+                <FileTypeIcon mimeType={asset.MimeType} size={96} />
                 <p className="text-sm text-muted-foreground">
                   No preview available for {asset.MimeType}
                 </p>
