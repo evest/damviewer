@@ -1,5 +1,24 @@
 export const PAGE_SIZE = 24;
 
+/** MIME types that look like images/videos but can't be previewed in a browser */
+const NON_PREVIEWABLE_MIME_TYPES = new Set([
+  "image/x-photoshop",
+  "image/vnd.adobe.photoshop",
+  "application/cmp+structured-content",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.ms-powerpoint",
+  "application/vnd.ms-excel",
+  "application/vnd.ms-word",
+  "application/zip",
+  "application/x-zip-compressed",
+]);
+
+export function isPreviewable(mimeType: string): boolean {
+  return !NON_PREVIEWABLE_MIME_TYPES.has(mimeType);
+}
+
 export function isImage(mimeType: string): boolean {
   return mimeType.startsWith("image/");
 }

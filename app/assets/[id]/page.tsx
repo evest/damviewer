@@ -6,7 +6,8 @@ import { AssetDetail } from "@/app/components/assets/AssetDetail";
 import { RenditionList } from "@/app/components/assets/RenditionList";
 import { DamImage } from "@/app/components/ui/DamImage";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, Download, FileText } from "lucide-react";
+import { isPreviewable } from "@/lib/constants";
 import type { Asset, ImageAsset, VideoAsset, RawFileAsset } from "@/lib/types/asset";
 
 interface AssetDetailResponse {
@@ -39,6 +40,7 @@ export default async function AssetPage({
 
   const url = imageAsset?.Url ?? videoAsset?.Url ?? rawAsset?.Url;
   const renditions = imageAsset?.Renditions ?? videoAsset?.Renditions ?? [];
+  const canPreview = isPreviewable(asset.MimeType);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
@@ -69,7 +71,7 @@ export default async function AssetPage({
         <div className="space-y-6">
           {/* Preview */}
           <div className="overflow-hidden rounded-lg border bg-muted">
-            {imageAsset ? (
+            {imageAsset && canPreview ? (
               <div className="relative aspect-video">
                 <DamImage
                   src={imageAsset.Url}
@@ -80,7 +82,7 @@ export default async function AssetPage({
                   priority
                 />
               </div>
-            ) : videoAsset ? (
+            ) : videoAsset && canPreview ? (
               <video
                 src={videoAsset.Url}
                 controls
@@ -88,17 +90,19 @@ export default async function AssetPage({
               >
                 Your browser does not support the video tag.
               </video>
-            ) : rawAsset ? (
+            ) : (
               <div className="flex aspect-video flex-col items-center justify-center gap-4">
-                <Download className="h-16 w-16 text-muted-foreground" />
-                <p className="text-muted-foreground">
-                  {asset.MimeType}
+                <FileText className="h-16 w-16 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">
+                  No preview available for {asset.MimeType}
                 </p>
-                <a href={rawAsset.Url} target="_blank" rel="noopener noreferrer">
-                  <Button>Download File</Button>
-                </a>
+                {url && (
+                  <a href={url} target="_blank" rel="noopener noreferrer">
+                    <Button>Download File</Button>
+                  </a>
+                )}
               </div>
-            ) : null}
+            )}
           </div>
 
           {/* Renditions */}
