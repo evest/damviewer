@@ -67,6 +67,13 @@ export const ASSET_DETAIL_QUERY = `
             Name
           }
         }
+        Fields {
+          Id
+          Name
+          Type
+          Values
+          _json
+        }
         ... on PublicImageAsset {
           Url
           Width

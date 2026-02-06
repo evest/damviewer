@@ -29,6 +29,25 @@ export interface FocalPoint {
   Y: number;
 }
 
+export interface FieldChoice {
+  Id: string;
+  Name: string;
+}
+
+export interface FieldJson {
+  Choices: FieldChoice[];
+  IsMultiSelect: boolean;
+  [key: string]: unknown;
+}
+
+export interface AssetField {
+  Id: string;
+  Name: string;
+  Type: string;
+  Values: string[];
+  _json: FieldJson;
+}
+
 export interface AssetBase {
   __typename: string;
   Id: string;
@@ -39,6 +58,7 @@ export interface AssetBase {
   LibraryPath: string;
   Tags: Tag[];
   Labels: Label[];
+  Fields: AssetField[];
 }
 
 export interface ImageAsset extends AssetBase {

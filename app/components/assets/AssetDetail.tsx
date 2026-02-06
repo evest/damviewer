@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import type { Asset, ImageAsset, Label } from "@/lib/types/asset";
+import type { Asset, AssetField, ImageAsset, Label } from "@/lib/types/asset";
 import { formatDate } from "@/lib/constants";
 
 interface AssetDetailProps {
@@ -71,8 +71,41 @@ export function AssetDetail({ asset }: AssetDetailProps) {
           </div>
         </div>
       )}
+      {asset.Fields && asset.Fields.length > 0 && (
+        <div>
+          <h2 className="text-sm font-medium uppercase text-muted-foreground">Custom Fields</h2>
+          <Separator className="my-2" />
+          <div className="space-y-3">
+            {asset.Fields.map((field: AssetField) => (
+              <div key={field.Id}>
+                <p className="mb-1 text-xs font-medium text-muted-foreground">
+                  {field.Name}
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {resolveFieldValues(field).map((name) => (
+                    <Badge key={name} variant="outline">
+                      {name}
+                    </Badge>
+                  ))}
+                  {resolveFieldValues(field).length === 0 && (
+                    <span className="text-xs text-muted-foreground italic">Not set</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
+}
+
+function resolveFieldValues(field: AssetField): string[] {
+  if (!field.Values || field.Values.length === 0) return [];
+  if (!field._json?.Choices) return field.Values;
+
+  const choiceMap = new Map(field._json.Choices.map((c) => [c.Id, c.Name]));
+  return field.Values.map((id) => choiceMap.get(id) ?? id);
 }
 
 function DetailRow({ label, value }: { label: string; value: string }) {
