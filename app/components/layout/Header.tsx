@@ -9,7 +9,7 @@ export function Header() {
         <Link href="/" className="shrink-0 text-lg font-semibold">
           DAM Viewer
         </Link>
-        <div className="flex flex-1 justify-center">
+        <div className="hidden flex-1 justify-center lg:flex">
           <Suspense>
             <SearchInput />
           </Suspense>

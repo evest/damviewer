@@ -2,7 +2,8 @@ import { Suspense } from "react";
 import { graphqlFetch } from "@/lib/graphql/client";
 import { ASSETS_LIST_QUERY, ASSETS_FACETS_QUERY } from "@/lib/graphql/queries";
 import { AssetGrid } from "@/app/components/assets/AssetGrid";
-import { Sidebar } from "@/app/components/layout/Sidebar";
+import { Sidebar, MobileFilters } from "@/app/components/layout/Sidebar";
+import { SearchInput } from "@/app/components/ui/SearchInput";
 import { PAGE_SIZE } from "@/lib/constants";
 import { buildWhereClause } from "@/lib/graphql/filters";
 import type { Asset, AssetListResponse, FacetValue } from "@/lib/types/asset";
@@ -66,9 +67,20 @@ export default async function Home({
       <Suspense>
         <Sidebar tags={tags} />
       </Suspense>
-      <main className="flex-1 overflow-auto p-4 sm:p-6">
-        <AssetGrid data={data} page={page} />
-      </main>
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Mobile toolbar: search + filter button */}
+        <div className="flex items-center gap-2 border-b px-4 py-2 lg:hidden">
+          <Suspense>
+            <SearchInput />
+          </Suspense>
+          <Suspense>
+            <MobileFilters tags={tags} />
+          </Suspense>
+        </div>
+        <main className="flex-1 overflow-auto p-4 sm:p-6">
+          <AssetGrid data={data} page={page} />
+        </main>
+      </div>
     </div>
   );
 }
