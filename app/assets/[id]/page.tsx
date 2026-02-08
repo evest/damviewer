@@ -9,13 +9,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Download } from "lucide-react";
 import { FileTypeIcon } from "@/app/components/ui/FileTypeIcon";
 import { isPreviewable } from "@/lib/constants";
-import type { Asset, ImageAsset, VideoAsset, RawFileAsset } from "@/lib/types/asset";
-
-interface AssetDetailResponse {
-  Asset: {
-    items: Asset[];
-  };
-}
+import { isImageAsset, isVideoAsset } from "@/lib/types/asset";
+import type { AssetDetailResponse } from "@/lib/graphql/types";
 
 export default async function AssetPage({
   params,
@@ -31,16 +26,9 @@ export default async function AssetPage({
   const asset = data.Asset.items[0];
   if (!asset) notFound();
 
-  const isImage = asset.__typename === "PublicImageAsset";
-  const isVideo = asset.__typename === "PublicVideoAsset";
-  const isRaw = asset.__typename === "PublicRawFileAsset";
-
-  const imageAsset = isImage ? (asset as ImageAsset) : null;
-  const videoAsset = isVideo ? (asset as VideoAsset) : null;
-  const rawAsset = isRaw ? (asset as RawFileAsset) : null;
-
-  const url = imageAsset?.Url ?? videoAsset?.Url ?? rawAsset?.Url;
-  const renditions = imageAsset?.Renditions ?? videoAsset?.Renditions ?? [];
+  const url = "Url" in asset ? asset.Url : undefined;
+  const renditions =
+    (isImageAsset(asset) ? asset.Renditions : isVideoAsset(asset) ? asset.Renditions : null) ?? [];
   const canPreview = isPreviewable(asset.MimeType);
 
   return (
@@ -72,20 +60,20 @@ export default async function AssetPage({
         <div className="min-w-0 space-y-6">
           {/* Preview */}
           <div className="overflow-hidden rounded-lg border bg-muted">
-            {imageAsset && canPreview ? (
+            {isImageAsset(asset) && canPreview ? (
               <div className="relative aspect-video">
                 <DamImage
-                  src={imageAsset.Url}
-                  alt={imageAsset.AltText || imageAsset.Title || "Image"}
+                  src={asset.Url}
+                  alt={asset.AltText || asset.Title || "Image"}
                   fill
                   className="object-contain"
                   sizes="(max-width: 1024px) 100vw, 60vw"
                   priority
                 />
               </div>
-            ) : videoAsset && canPreview ? (
+            ) : isVideoAsset(asset) && canPreview ? (
               <video
-                src={videoAsset.Url}
+                src={asset.Url}
                 controls
                 className="aspect-video w-full"
               >

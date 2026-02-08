@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import type { Asset, AssetField, ImageAsset, VideoAsset, Label } from "@/lib/types/asset";
+import { isImageAsset, isVideoAsset, type Asset, type AssetField, type Label } from "@/lib/types/asset";
 import { formatDate, isExpired } from "@/lib/constants";
 
 interface AssetDetailProps {
@@ -9,10 +9,9 @@ interface AssetDetailProps {
 }
 
 export function AssetDetail({ asset }: AssetDetailProps) {
-  const imageAsset = asset.__typename === "PublicImageAsset" ? (asset as ImageAsset) : null;
-  const videoAsset = asset.__typename === "PublicVideoAsset" ? (asset as VideoAsset) : null;
   const description = "Description" in asset ? (asset as { Description: string }).Description : null;
-  const altText = imageAsset?.AltText || videoAsset?.AltText || null;
+  const altText =
+    (isImageAsset(asset) ? asset.AltText : isVideoAsset(asset) ? asset.AltText : null) || null;
 
   return (
     <div className="space-y-6">
@@ -39,16 +38,17 @@ export function AssetDetail({ asset }: AssetDetailProps) {
               </dd>
             </div>
           )}
-          {imageAsset && (
+          {isImageAsset(asset) && (
             <DetailRow
               label="Dimensions"
-              value={`${imageAsset.Width} x ${imageAsset.Height}`}
+              value={`${asset.Width} x ${asset.Height}`}
             />
           )}
-          {imageAsset?.FocalPoint?.X != null && imageAsset?.FocalPoint?.Y != null && (
+          {/* Content Graph returns FocalPoint objects with null X/Y values, so check each property */}
+          {isImageAsset(asset) && asset.FocalPoint?.X != null && asset.FocalPoint?.Y != null && (
             <DetailRow
               label="Focal Point"
-              value={`${imageAsset.FocalPoint.X}, ${imageAsset.FocalPoint.Y}`}
+              value={`${asset.FocalPoint.X}, ${asset.FocalPoint.Y}`}
             />
           )}
           {asset.LibraryPath && <DetailRow label="Library Path" value={asset.LibraryPath} />}

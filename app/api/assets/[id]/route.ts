@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { graphqlFetch } from "@/lib/graphql/client";
 import { ASSET_DETAIL_QUERY } from "@/lib/graphql/queries";
-import type { Asset } from "@/lib/types/asset";
-
-interface AssetDetailResponse {
-  Asset: {
-    items: Asset[];
-  };
-}
+import type { AssetDetailResponse } from "@/lib/graphql/types";
 
 export async function GET(
   _request: NextRequest,

@@ -3,15 +3,8 @@ import { graphqlFetch } from "@/lib/graphql/client";
 import { ASSETS_LIST_QUERY } from "@/lib/graphql/queries";
 import { PAGE_SIZE } from "@/lib/constants";
 import { buildWhereClause } from "@/lib/graphql/filters";
-import type { Asset, AssetListResponse } from "@/lib/types/asset";
-
-interface AssetsQueryResponse {
-  Asset: {
-    total: number;
-    cursor: string;
-    items: Asset[];
-  };
-}
+import type { AssetListResponse } from "@/lib/types/asset";
+import type { AssetsQueryResponse } from "@/lib/graphql/types";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;

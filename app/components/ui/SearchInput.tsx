@@ -1,27 +1,23 @@
 "use client";
 
 import { useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Search, X } from "lucide-react";
+import { useUrlParams } from "@/lib/hooks/useUrlParams";
 
 export function SearchInput() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const { searchParams, updateParams } = useUrlParams();
   const qParam = searchParams.get("q") ?? "";
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const inputRef = useRef<HTMLInputElement>(null);
 
   function updateSearch(term: string) {
-    const params = new URLSearchParams(searchParams.toString());
-    if (term) {
-      params.set("q", term);
-    } else {
-      params.delete("q");
-    }
-    params.delete("page");
-    params.delete("cursor");
-    router.push(`/?${params.toString()}`);
+    updateParams((params) => {
+      if (term) params.set("q", term);
+      else params.delete("q");
+      params.delete("page");
+      params.delete("cursor");
+    });
   }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {

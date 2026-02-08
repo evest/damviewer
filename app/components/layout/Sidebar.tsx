@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -15,6 +14,7 @@ import {
 } from "@/components/ui/sheet";
 import { SlidersHorizontal, X, Image, FileVideo, FileText, Calendar } from "lucide-react";
 import type { FacetValue } from "@/lib/types/asset";
+import { useUrlParams } from "@/lib/hooks/useUrlParams";
 
 interface SidebarProps {
   tags: FacetValue[];
@@ -35,52 +35,42 @@ const DATE_OPTIONS = [
 ] as const;
 
 function useFilterParams() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const { searchParams, updateParams } = useUrlParams();
   const activeTypes = searchParams.get("type")?.split(",").filter(Boolean) ?? [];
   const activeTags = searchParams.get("tags")?.split(",").filter(Boolean) ?? [];
   const activeCreated = searchParams.get("created") ?? "";
   const hasFilters = activeTypes.length > 0 || activeTags.length > 0 || !!activeCreated;
 
   function toggleParam(key: string, value: string) {
-    const params = new URLSearchParams(searchParams.toString());
-    const current = params.get(key)?.split(",").filter(Boolean) ?? [];
-    const idx = current.indexOf(value);
-    if (idx >= 0) {
-      current.splice(idx, 1);
-    } else {
-      current.push(value);
-    }
-    if (current.length > 0) {
-      params.set(key, current.join(","));
-    } else {
-      params.delete(key);
-    }
-    params.delete("page");
-    params.delete("cursor");
-    router.push(`/?${params.toString()}`);
+    updateParams((params) => {
+      const current = params.get(key)?.split(",").filter(Boolean) ?? [];
+      const idx = current.indexOf(value);
+      if (idx >= 0) current.splice(idx, 1);
+      else current.push(value);
+      if (current.length > 0) params.set(key, current.join(","));
+      else params.delete(key);
+      params.delete("page");
+      params.delete("cursor");
+    });
   }
 
   function setParam(key: string, value: string) {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value) {
-      params.set(key, value);
-    } else {
-      params.delete(key);
-    }
-    params.delete("page");
-    params.delete("cursor");
-    router.push(`/?${params.toString()}`);
+    updateParams((params) => {
+      if (value) params.set(key, value);
+      else params.delete(key);
+      params.delete("page");
+      params.delete("cursor");
+    });
   }
 
   function clearFilters() {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("type");
-    params.delete("tags");
-    params.delete("created");
-    params.delete("page");
-    params.delete("cursor");
-    router.push(`/?${params.toString()}`);
+    updateParams((params) => {
+      params.delete("type");
+      params.delete("tags");
+      params.delete("created");
+      params.delete("page");
+      params.delete("cursor");
+    });
   }
 
   return { activeTypes, activeTags, activeCreated, hasFilters, toggleParam, setParam, clearFilters };
@@ -154,59 +144,50 @@ function TypeSection({
   );
 }
 
-function DateSectionList({
+function DateSection({
   activeCreated,
   setParam,
+  variant = "list",
 }: {
   activeCreated: string;
   setParam: (key: string, value: string) => void;
+  variant?: "list" | "dropdown";
 }) {
   return (
     <div className="px-4 py-3">
       <h3 className="mb-2 text-xs font-medium uppercase text-muted-foreground">Created Date</h3>
-      <div className="space-y-1">
-        {DATE_OPTIONS.map(({ value, label }) => {
-          const isActive = activeCreated === value;
-          return (
-            <button
-              key={value}
-              onClick={() => setParam("created", isActive ? "" : value)}
-              className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-accent ${
-                isActive ? "bg-accent font-medium" : ""
-              }`}
-            >
-              <Calendar className="h-4 w-4" />
+      {variant === "dropdown" ? (
+        <select
+          value={activeCreated}
+          onChange={(e) => setParam("created", e.target.value)}
+          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        >
+          <option value="">Any time</option>
+          {DATE_OPTIONS.map(({ value, label }) => (
+            <option key={value} value={value}>
               {label}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function DateSectionDropdown({
-  activeCreated,
-  setParam,
-}: {
-  activeCreated: string;
-  setParam: (key: string, value: string) => void;
-}) {
-  return (
-    <div className="px-4 py-3">
-      <h3 className="mb-2 text-xs font-medium uppercase text-muted-foreground">Created Date</h3>
-      <select
-        value={activeCreated}
-        onChange={(e) => setParam("created", e.target.value)}
-        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-      >
-        <option value="">Any time</option>
-        {DATE_OPTIONS.map(({ value, label }) => (
-          <option key={value} value={value}>
-            {label}
-          </option>
-        ))}
-      </select>
+            </option>
+          ))}
+        </select>
+      ) : (
+        <div className="space-y-1">
+          {DATE_OPTIONS.map(({ value, label }) => {
+            const isActive = activeCreated === value;
+            return (
+              <button
+                key={value}
+                onClick={() => setParam("created", isActive ? "" : value)}
+                className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-accent ${
+                  isActive ? "bg-accent font-medium" : ""
+                }`}
+              >
+                <Calendar className="h-4 w-4" />
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -274,7 +255,7 @@ function SidebarContent({ tags }: SidebarProps) {
       <ScrollArea className="flex-1">
         <TypeSection activeTypes={activeTypes} toggleParam={toggleParam} />
         <Separator />
-        <DateSectionList activeCreated={activeCreated} setParam={setParam} />
+        <DateSection activeCreated={activeCreated} setParam={setParam} />
         <Separator />
         <TagsSection tags={tags} activeTags={activeTags} toggleParam={toggleParam} />
       </ScrollArea>
@@ -326,7 +307,7 @@ function MobileFilterContent({ tags }: SidebarProps) {
       <ScrollArea className="min-h-0 flex-1">
         <TypeSection activeTypes={activeTypes} toggleParam={toggleParam} />
         <Separator />
-        <DateSectionDropdown activeCreated={activeCreated} setParam={setParam} />
+        <DateSection activeCreated={activeCreated} setParam={setParam} variant="dropdown" />
         <Separator />
         <TagsSection
           tags={tags}

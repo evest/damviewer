@@ -89,6 +89,18 @@ export interface RawFileAsset extends AssetBase {
 
 export type Asset = ImageAsset | VideoAsset | RawFileAsset | AssetBase;
 
+export function isImageAsset(asset: Asset): asset is ImageAsset {
+  return asset.__typename === "PublicImageAsset";
+}
+
+export function isVideoAsset(asset: Asset): asset is VideoAsset {
+  return asset.__typename === "PublicVideoAsset";
+}
+
+export function isRawFileAsset(asset: Asset): asset is RawFileAsset {
+  return asset.__typename === "PublicRawFileAsset";
+}
+
 export interface AssetListResponse {
   total: number;
   cursor: string;

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FileTypeIcon } from "@/app/components/ui/FileTypeIcon";
-import type { Asset } from "@/lib/types/asset";
+import { isImageAsset, type Asset } from "@/lib/types/asset";
 import { isImage, isPreviewable, isExpired, formatDate, damLoader } from "@/lib/constants";
 
 interface AssetCardProps {
@@ -23,8 +23,8 @@ export function AssetCard({ asset }: AssetCardProps) {
           {hasUrl && isImage(asset.MimeType) && isPreviewable(asset.MimeType) ? (
             <Image
               loader={damLoader}
-              src={asset.Url as string}
-              alt={(asset as { AltText?: string }).AltText || asset.Title || "Asset"}
+              src={(asset as { Url: string }).Url}
+              alt={(isImageAsset(asset) ? asset.AltText : null) || asset.Title || "Asset"}
               fill
               className="object-cover transition-transform group-hover:scale-105"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"

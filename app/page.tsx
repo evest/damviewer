@@ -6,27 +6,8 @@ import { Sidebar, MobileFilters } from "@/app/components/layout/Sidebar";
 import { SearchInput } from "@/app/components/ui/SearchInput";
 import { PAGE_SIZE } from "@/lib/constants";
 import { buildWhereClause } from "@/lib/graphql/filters";
-import type { Asset, AssetListResponse, FacetValue } from "@/lib/types/asset";
-
-interface AssetsQueryResponse {
-  Asset: {
-    total: number;
-    cursor: string;
-    items: Asset[];
-  };
-}
-
-interface FacetsQueryResponse {
-  Asset: {
-    facets: {
-      MimeType: FacetValue[];
-      Tags: {
-        Name: FacetValue[];
-      };
-    };
-    total: number;
-  };
-}
+import type { AssetListResponse } from "@/lib/types/asset";
+import type { AssetsQueryResponse, FacetsQueryResponse } from "@/lib/graphql/types";
 
 export default async function Home({
   searchParams,
