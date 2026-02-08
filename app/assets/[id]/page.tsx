@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { graphqlFetch } from "@/lib/graphql/client";
 import { ASSET_DETAIL_QUERY } from "@/lib/graphql/queries";
 import { AssetDetail } from "@/app/components/assets/AssetDetail";
+import { CmpDetails } from "@/app/components/assets/CmpDetails";
 import { RenditionList } from "@/app/components/assets/RenditionList";
 import { DamImage } from "@/app/components/ui/DamImage";
 import { Button } from "@/components/ui/button";
@@ -99,8 +100,9 @@ export default async function AssetPage({
         </div>
 
         {/* Metadata sidebar */}
-        <aside className="min-w-0">
+        <aside className="min-w-0 space-y-6">
           <AssetDetail asset={asset} />
+          <CmpDetails assetId={asset.Id} isImage={isImageAsset(asset)} />
         </aside>
       </div>
     </div>
