@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import type { Asset, AssetField, ImageAsset, VideoAsset, Label } from "@/lib/types/asset";
-import { formatDate } from "@/lib/constants";
+import { formatDate, isExpired } from "@/lib/constants";
 
 interface AssetDetailProps {
   asset: Asset;
@@ -26,6 +26,19 @@ export function AssetDetail({ asset }: AssetDetailProps) {
           <DetailRow label="MIME Type" value={asset.MimeType} />
           <DetailRow label="Created" value={formatDate(asset.DateCreated)} />
           <DetailRow label="Modified" value={formatDate(asset.DateModified)} />
+          {asset.ExpiryDate && (
+            <div className="grid grid-cols-[auto_1fr] gap-x-4">
+              <dt className="text-muted-foreground">Expires</dt>
+              <dd className="break-all text-right">
+                <span className={isExpired(asset.ExpiryDate) ? "text-destructive font-medium" : ""}>
+                  {formatDate(asset.ExpiryDate)}
+                </span>
+                {isExpired(asset.ExpiryDate) && (
+                  <Badge variant="destructive" className="ml-2 text-xs">Expired</Badge>
+                )}
+              </dd>
+            </div>
+          )}
           {imageAsset && (
             <DetailRow
               label="Dimensions"
@@ -119,9 +132,9 @@ function resolveFieldValues(field: AssetField): string[] {
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between gap-4">
-      <dt className="shrink-0 text-muted-foreground">{label}</dt>
-      <dd className="text-right break-all">{value}</dd>
+    <div className="grid grid-cols-[auto_1fr] gap-x-4">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="break-all text-right">{value}</dd>
     </div>
   );
 }

@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FileTypeIcon } from "@/app/components/ui/FileTypeIcon";
 import type { Asset } from "@/lib/types/asset";
-import { isImage, isPreviewable, formatDate, damLoader } from "@/lib/constants";
+import { isImage, isPreviewable, isExpired, formatDate, damLoader } from "@/lib/constants";
 
 interface AssetCardProps {
   asset: Asset;
@@ -14,6 +14,7 @@ interface AssetCardProps {
 
 export function AssetCard({ asset }: AssetCardProps) {
   const hasUrl = "Url" in asset && asset.Url;
+  const expired = isExpired(asset.ExpiryDate);
 
   return (
     <Link href={`/assets/${asset.Id}`}>
@@ -33,6 +34,11 @@ export function AssetCard({ asset }: AssetCardProps) {
               <FileTypeIcon mimeType={asset.MimeType} size={64} />
             </div>
           )}
+          {expired && (
+            <Badge variant="destructive" className="absolute top-2 right-2 text-xs shadow-sm">
+              Expired
+            </Badge>
+          )}
         </div>
         <CardContent className="p-3">
           <p className="truncate text-sm font-medium" title={asset.Title}>
@@ -43,7 +49,7 @@ export function AssetCard({ asset }: AssetCardProps) {
               {asset.MimeType.split("/").pop()}
             </Badge>
             <span className="text-xs text-muted-foreground">
-              {formatDate(asset.DateCreated)}
+              {asset.ExpiryDate ? formatDate(asset.ExpiryDate) : formatDate(asset.DateCreated)}
             </span>
           </div>
         </CardContent>

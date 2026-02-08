@@ -45,31 +45,31 @@ export default async function AssetPage({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-      <div className="mb-6 flex items-center gap-4">
+      <div className="mb-6 flex items-center gap-2">
         <Link href="/">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
+          <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-auto sm:px-3">
+            <ArrowLeft className="h-4 w-4" />
+            <span className="hidden sm:inline ml-1">Back</span>
           </Button>
         </Link>
-        <h1 className="text-xl font-semibold">{asset.Title || "Untitled"}</h1>
+        <h1 className="min-w-0 break-all text-xl font-semibold">{asset.Title || "Untitled"}</h1>
         {url && (
           <a
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="ml-auto"
+            className="ml-auto shrink-0"
           >
-            <Button variant="outline" size="sm">
-              <Download className="mr-2 h-4 w-4" />
-              Download
+            <Button variant="outline" size="icon" className="h-7 w-7 sm:h-8 sm:w-auto sm:px-3">
+              <Download className="h-4 w-4" />
+              <span className="hidden sm:inline ml-1">Download</span>
             </Button>
           </a>
         )}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_350px]">
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           {/* Preview */}
           <div className="overflow-hidden rounded-lg border bg-muted">
             {imageAsset && canPreview ? (
@@ -111,7 +111,7 @@ export default async function AssetPage({
         </div>
 
         {/* Metadata sidebar */}
-        <aside>
+        <aside className="min-w-0">
           <AssetDetail asset={asset} />
         </aside>
       </div>

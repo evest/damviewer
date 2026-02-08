@@ -54,6 +54,7 @@ export interface AssetBase {
   Title: string;
   DateCreated: string;
   DateModified: string;
+  ExpiryDate: string | null;
   MimeType: string;
   LibraryPath: string;
   Tags: Tag[];

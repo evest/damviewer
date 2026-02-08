@@ -45,6 +45,11 @@ export function damLoader({ src, width }: { src: string; width: number }): strin
   return u.toString();
 }
 
+export function isExpired(expiresOn: string | null): boolean {
+  if (!expiresOn) return false;
+  return new Date(expiresOn) < new Date();
+}
+
 export function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString("en-US", {
     year: "numeric",

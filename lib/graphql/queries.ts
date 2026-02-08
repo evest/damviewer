@@ -9,6 +9,7 @@ export const ASSETS_LIST_QUERY = `
         Title
         DateCreated
         DateModified
+        ExpiryDate
         MimeType
         LibraryPath
         Tags {
@@ -53,6 +54,7 @@ export const ASSET_DETAIL_QUERY = `
         Title
         DateCreated
         DateModified
+        ExpiryDate
         MimeType
         LibraryPath
         Tags {
