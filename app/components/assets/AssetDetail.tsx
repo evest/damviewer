@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { DetailRow } from "@/app/components/ui/DetailRow";
 import { isImageAsset, isVideoAsset, type Asset, type AssetField, type Label } from "@/lib/types/asset";
 import { formatDate, isExpired } from "@/lib/constants";
 
@@ -130,11 +131,3 @@ function resolveFieldValues(field: AssetField): string[] {
   return field.Values.map((id) => choiceMap.get(id) ?? id);
 }
 
-function DetailRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="grid grid-cols-[auto_1fr] gap-x-4">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd className="break-all text-right">{value}</dd>
-    </div>
-  );
-}
