@@ -22,9 +22,9 @@ export async function GET(request: NextRequest) {
   try {
     const data = await graphqlFetch<AssetsQueryResponse>(ASSETS_LIST_QUERY, {
       limit,
-      cursor: cursor || undefined,
-      where,
-      orderBy: { DateCreated: "DESC" },
+      ...(cursor
+        ? { cursor }
+        : { where, orderBy: { DateCreated: "DESC" } }),
     });
 
     const response: AssetListResponse = {

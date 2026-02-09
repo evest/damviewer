@@ -28,9 +28,9 @@ export default async function Home({
   const [assetsData, facetsData] = await Promise.all([
     graphqlFetch<AssetsQueryResponse>(ASSETS_LIST_QUERY, {
       limit: PAGE_SIZE,
-      cursor: cursor || undefined,
-      where,
-      orderBy: { DateCreated: "DESC" },
+      ...(cursor
+        ? { cursor }
+        : { where, orderBy: { DateCreated: "DESC" } }),
     }),
     graphqlFetch<FacetsQueryResponse>(ASSETS_FACETS_QUERY),
   ]);
