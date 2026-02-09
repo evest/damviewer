@@ -103,7 +103,6 @@ export function isRawFileAsset(asset: Asset): asset is RawFileAsset {
 
 export interface AssetListResponse {
   total: number;
-  cursor: string;
   items: Asset[];
 }
 

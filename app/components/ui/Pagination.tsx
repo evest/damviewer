@@ -7,11 +7,10 @@ import { useUrlParams } from "@/lib/hooks/useUrlParams";
 
 interface PaginationProps {
   total: number;
-  cursor: string;
   page: number;
 }
 
-export function Pagination({ total, cursor, page }: PaginationProps) {
+export function Pagination({ total, page }: PaginationProps) {
   const { updateParams } = useUrlParams();
 
   const start = (page - 1) * PAGE_SIZE + 1;
@@ -19,13 +18,11 @@ export function Pagination({ total, cursor, page }: PaginationProps) {
   const hasPrev = page > 1;
   const hasNext = page * PAGE_SIZE < total;
 
-  function navigate(newPage: number, newCursor?: string) {
+  function navigate(newPage: number) {
     updateParams((params) => {
       params.delete("page");
-      params.delete("cursor");
       if (newPage > 1) {
         params.set("page", String(newPage));
-        if (newCursor) params.set("cursor", newCursor);
       }
     });
   }
@@ -51,7 +48,7 @@ export function Pagination({ total, cursor, page }: PaginationProps) {
           variant="outline"
           size="sm"
           disabled={!hasNext}
-          onClick={() => navigate(page + 1, cursor)}
+          onClick={() => navigate(page + 1)}
         >
           Next
           <ChevronRight className="ml-1 h-4 w-4" />

@@ -15,8 +15,7 @@ export default async function Home({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const cursor = typeof params.cursor === "string" ? params.cursor : undefined;
-  const page = parseInt(typeof params.page === "string" ? params.page : "1", 10);
+  const page = Math.max(1, parseInt(typeof params.page === "string" ? params.page : "1", 10));
 
   const where = buildWhereClause({
     q: typeof params.q === "string" ? params.q : undefined,
@@ -28,16 +27,15 @@ export default async function Home({
   const [assetsData, facetsData] = await Promise.all([
     graphqlFetch<AssetsQueryResponse>(ASSETS_LIST_QUERY, {
       limit: PAGE_SIZE,
-      ...(cursor
-        ? { cursor }
-        : { where, orderBy: { DateCreated: "DESC" } }),
+      skip: (page - 1) * PAGE_SIZE,
+      where,
+      orderBy: { DateCreated: "DESC" },
     }),
     graphqlFetch<FacetsQueryResponse>(ASSETS_FACETS_QUERY),
   ]);
 
   const data: AssetListResponse = {
     total: assetsData.Asset.total,
-    cursor: assetsData.Asset.cursor,
     items: assetsData.Asset.items,
   };
 

@@ -3,7 +3,6 @@ import type { Asset, FacetValue } from "@/lib/types/asset";
 export interface AssetsQueryResponse {
   Asset: {
     total: number;
-    cursor: string;
     items: Asset[];
   };
 }

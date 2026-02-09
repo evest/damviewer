@@ -26,7 +26,7 @@ export function AssetGrid({ data, page }: AssetGridProps) {
           <AssetCard key={asset.Id} asset={asset} />
         ))}
       </div>
-      <Pagination total={data.total} cursor={data.cursor} page={page} />
+      <Pagination total={data.total} page={page} />
     </div>
   );
 }
