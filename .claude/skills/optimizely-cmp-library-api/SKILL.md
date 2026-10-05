@@ -29,6 +29,11 @@ The response shapes and endpoint behavior documented below have been **verified 
 - **There is no `GET /assets/{id}` endpoint.** You must use type-specific endpoints: `/images/{id}`, `/videos/{id}`, `/raw-files/{id}`, `/articles/{id}`, `/structured-contents/{id}`.
 - **List endpoint (`GET /assets`) returns a summary.** Type-specific endpoints return the full detail with additional fields like `file_size`, `image_resolution`, `focal_point`, `tags`, `version_number`, etc.
 - **Pagination uses `next`/`previous` URLs**, not offset/page_size in the response pagination object.
+- **Write-back is split across two APIs.** Built-in properties (`title`, `description`, `alt_text`, `attribution_text`, `tags`, `expires_at`, `is_public`, `is_archived`, `folder_id`) are set with `PATCH /images|videos|raw-files/{id}`. Custom fields, **including labels**, are set with `PUT /assets/{id}/fields` (or `/fields/{field_id}`). `labels` on the PATCH endpoints is deprecated.
+- **`PUT /assets/{id}/fields` takes a top-level array** of `{ id, type, values }`, not `{ data: [...] }`, and not `value`. `type` is required.
+- **`GET /assets/{id}/fields` only returns fields that have a value.** Use `GET /fields` for the org's field definitions (with choices) to show or edit empty fields.
+- **`GET /assets/{id}/fields` is paginated (default page size 10).** Pass `page_size` or follow `pagination.next`.
+- **Optimizely's docs site redirects.** `docs.developers.optimizely.com/.../reference/*` pages currently redirect to the docs.optimizely.com homepage. The full OpenAPI spec is at https://developers.welcomesoftware.com/openapi/openapi.yaml; read request schemas from there.
 
 ## Configuration
 
@@ -356,17 +361,37 @@ Note: Video and raw file responses follow a similar shape but with type-specific
 
 #### Update Assets — `PATCH /images/{id}`, `PATCH /videos/{id}`, `PATCH /raw-files/{id}`
 
+Send only the properties you want to change. Returns the full updated asset (same shape as the GET). Accepted body properties (from the OpenAPI spec, `LibraryImageUpdateRequest`):
+
+| Property            | Type             | Notes                                                                 |
+|---------------------|------------------|-----------------------------------------------------------------------|
+| `title`             | string (min 1)   |                                                                       |
+| `description`       | string           | `""` clears it                                                        |
+| `alt_text`          | string           | Images and videos only; `""` clears it                                |
+| `attribution_text`  | string           | `""` clears it                                                        |
+| `tags`              | string[]         | **Replaces** all tags. Plain names (1–100 chars, unique, max 100); `[]` clears |
+| `expires_at`        | string \| null   | ISO 8601 UTC, e.g. `2026-12-31T00:00:00Z`; `null` removes the expiry  |
+| `is_public`         | boolean          |                                                                       |
+| `is_archived`       | boolean          |                                                                       |
+| `allow_se_indexing` | boolean          |                                                                       |
+| `folder_id`         | string \| null   | Moves the asset                                                       |
+| `labels`            | —                | **Deprecated.** Use `PUT /assets/{id}/fields` with `type: "label"`     |
+
+Note that tags are written as strings but read back as `{ guid, name }` objects.
+
 ```typescript
-// Update an image title and description
+// Update an image's title, tags and expiry
 const updateResponse = await cmpFetch('/images/5d7f910551b00a722e0418830cee6632', {
   method: 'PATCH',
   body: JSON.stringify({
     title: 'Updated Image Title',
-    description: 'New description for this image',
-    folder_id: 'target-folder-id', // optionally move to a different folder
+    tags: ['iceland', 'hotel'],          // replaces existing tags
+    expires_at: '2026-12-31T00:00:00Z',  // or null to remove
   }),
 });
 ```
+
+The API client may lack permission for some asset types: in one org, `GET /videos` returned 403 while images and raw files worked.
 
 #### Delete Assets
 
@@ -701,30 +726,57 @@ interface LabelGroup {
 
 ### Asset Fields — `GET /assets/{id}/fields`
 
-Read and update custom metadata fields on assets. The GET response includes the full field definition with available choices for dropdown/checkbox fields.
+Read and update custom metadata fields on assets, including **label** fields. All three endpoints are marked **Experimental** in the spec.
+
+- `GET /assets/{id}/fields` returns **only the fields that have a value** on the asset (an asset with no values returns `data: []`). Each item includes its choices. It is paginated (default 10), so pass `page_size`.
+- `PUT /assets/{id}/fields` **replaces** the asset's fields. The body is a **top-level array** of `{ id, type, values }`. Returns `{ data: AssetFieldResponse[], links }`.
+- `PUT /assets/{id}/fields/{field_id}` updates one field. The body is `{ type, values }` (no `id`).
 
 ```typescript
-// Get fields for an asset
-const fieldsResponse = await cmpFetch('/assets/ASSET_ID/fields');
+// Get fields for an asset (only fields with a value)
+const fieldsResponse = await cmpFetch('/assets/ASSET_ID/fields?page_size=100');
 const { data: fields } = await fieldsResponse.json();
 
-// Replace all fields on an asset
+// Replace the asset's fields. Body is a plain array; `type` is required.
 await cmpFetch('/assets/ASSET_ID/fields', {
   method: 'PUT',
-  body: JSON.stringify({
-    data: [
-      { id: 'field-id-1', value: 'New text value' },
-      { id: 'field-id-2', value: ['option-id-1', 'option-id-2'] },
-    ],
-  }),
+  body: JSON.stringify([
+    { id: 'text-field-id', type: 'text', values: ['New text value'] },
+    { id: 'dropdown-field-id', type: 'dropdown', values: ['choice-id-1', 'choice-id-2'] },
+    { id: 'label-field-id', type: 'label', values: ['label-value-id'] },
+    { id: 'cleared-field-id', type: 'text', values: [] },
+  ]),
 });
 
 // Update a single field
 await cmpFetch('/assets/ASSET_ID/fields/FIELD_ID', {
   method: 'PUT',
-  body: JSON.stringify({ value: 'Updated value' }),
+  body: JSON.stringify({ type: 'text', values: ['Updated value'] }),
 });
 ```
+
+**Safe replace pattern:** the spec says PUT *replaces* existing fields. It doesn't say whether fields left out of the array are cleared. To be safe, send the complete set: every field that should have a value, plus `values: []` for fields you are clearing. Prefer the single-field PUT when you change one field. Attachment (`image`/`video`) fields can't be echoed back as read, because writing them needs an upload `key`.
+
+#### Field definitions — `GET /fields`
+
+Lists every custom field in the org, including fields not set on a given asset. Use it to build an editor. Label groups appear here as `type: "label"` fields, with the same IDs as `GET /label-groups`.
+
+```typescript
+interface FieldDefinition {
+  id: string;
+  name: string;
+  helper_text: string;
+  is_active: boolean;                   // inactive fields are hidden in CMP; usually skip them
+  type: string;                         // see field types below
+  is_multi_select?: boolean;            // choice types only
+  choices?: Array<{ id: string; name: string; color: string | null }>;
+  has_thousand_separator?: boolean;     // number types only
+  decimal_places?: number;              // number types only
+  links: { source: string };
+}
+```
+
+Other field endpoints in the spec: `GET /fields/{id}`, `GET /fields/{id}/choices`, `GET /fields/{field_id}/choices/{choice_id}`.
 
 **Field response shape (verified):**
 ```typescript
@@ -753,14 +805,14 @@ function resolveFieldValues(field: AssetFieldResponse): string[] {
 }
 ```
 
-**Field types:**
-- `text`, `text_area`, `rich_text` — string value
-- `date` — ISO 8601 string
-- `dropdown`, `radio_button` — single option ID (choices provided in response)
-- `checkbox` — array of option IDs (choices provided in response)
-- `label` — label value IDs
-- `simple_number`, `percentage_number`, `currency_number` — numeric value
-- `image`, `video` — file reference
+**Field types and their `values` when writing** (`values` is always an array):
+- `text`, `text_area`, `rich_text`: `["a string"]` (`rich_text` is HTML)
+- `date`: one ISO 8601 UTC string, `["2020-02-10T10:40:45Z"]`
+- `dropdown`: choice IDs. More than one only when `is_multi_select` is true
+- `radio_button`: exactly one choice ID
+- `checkbox`, `label`: array of choice IDs (for `label`, the label value IDs)
+- `simple_number`, `percentage_number`, `currency_number`: one **number** (not a string), `[200]`
+- `image`, `video`: `[{ title, key }]`, where `key` is `upload_meta_fields.key` from `GET /upload-url`
 
 ### Asset Lineages
 
@@ -1000,10 +1052,40 @@ interface AssetCreateRequest {
   folder_id?: string;
 }
 
+// PATCH /images|videos|raw-files/{id}. Labels are deprecated here; use AssetFieldUpdate.
 interface AssetUpdateRequest {
   title?: string;
   description?: string;
-  folder_id?: string;
+  alt_text?: string;                    // images and videos
+  attribution_text?: string;
+  tags?: string[];                      // replaces all tags
+  expires_at?: string | null;           // ISO 8601 UTC, null removes
+  is_public?: boolean;
+  is_archived?: boolean;
+  allow_se_indexing?: boolean;
+  folder_id?: string | null;
+}
+
+// PUT /assets/{id}/fields body is AssetFieldUpdate[] (a top-level array).
+// PUT /assets/{id}/fields/{field_id} body is Omit<AssetFieldUpdate, 'id'>.
+interface AssetFieldUpdate {
+  id: string;
+  type: string;                         // required, e.g. "text", "dropdown", "label"
+  values: Array<string | number | { title: string; key: string }>;
+}
+
+// GET /fields — org-wide field definitions
+interface FieldDefinition {
+  id: string;
+  name: string;
+  helper_text: string;
+  is_active: boolean;
+  type: string;
+  is_multi_select?: boolean;
+  choices?: Array<{ id: string; name: string; color: string | null }>;
+  has_thousand_separator?: boolean;
+  decimal_places?: number;
+  links: { source: string };
 }
 
 interface UploadUrlResponse {
@@ -1114,7 +1196,8 @@ interface AssetLineageResponse {
 - **API Overview**: https://docs.developers.optimizely.com/content-marketing-platform/docs/open-api-introduction
 - **Authentication**: https://docs.developers.optimizely.com/content-marketing-platform/docs/authentication-1
 - **API Reference**: https://docs.developers.optimizely.com/content-marketing-platform/reference/api-reference
-- **OpenAPI Spec**: https://docs.developers.optimizely.com/content-marketing-platform/openapi/optimizely-cmp-open-api-documentation.json
+- **OpenAPI Spec (YAML, works)**: https://developers.welcomesoftware.com/openapi/openapi.yaml, the full spec with request and response schemas. Find a schema with e.g. `grep -n "^    LibraryImageUpdateRequest:" openapi.yaml`.
+- **OpenAPI Spec (old link)**: https://docs.developers.optimizely.com/content-marketing-platform/openapi/optimizely-cmp-open-api-documentation.json now returns an HTML homepage, not JSON
 - **Upload Assets**: https://docs.developers.optimizely.com/content-marketing-platform/docs/upload-assets
 - **Multipart Upload**: https://docs.developers.optimizely.com/content-marketing-platform/docs/multipart-upload
 - **Rate Limits**: https://docs.developers.optimizely.com/content-marketing-platform/docs/rate-limits-1

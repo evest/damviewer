@@ -113,6 +113,20 @@ export interface AssetListParams {
   page_size?: number;
 }
 
+/** PATCH /images|videos|raw-files/{id}. Set labels via replaceAssetFields instead. */
+export interface AssetUpdateRequest {
+  title?: string;
+  description?: string;
+  alt_text?: string; // images and videos
+  attribution_text?: string;
+  tags?: string[]; // replaces all tags
+  expires_at?: string | null; // ISO 8601 UTC, null removes
+  is_public?: boolean;
+  is_archived?: boolean;
+  allow_se_indexing?: boolean;
+  folder_id?: string | null;
+}
+
 // ─── Client ─────────────────────────────────────────────────────────────────
 
 export class CmpLibraryClient {
@@ -258,15 +272,15 @@ export class CmpLibraryClient {
     return this.request(`/structured-contents/${id}`);
   }
 
-  async updateImage(id: string, data: { title?: string; description?: string; folder_id?: string }) {
+  async updateImage(id: string, data: AssetUpdateRequest) {
     return this.request(`/images/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
   }
 
-  async updateVideo(id: string, data: { title?: string; description?: string; folder_id?: string }) {
+  async updateVideo(id: string, data: AssetUpdateRequest) {
     return this.request(`/videos/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
   }
 
-  async updateRawFile(id: string, data: { title?: string; description?: string; folder_id?: string }) {
+  async updateRawFile(id: string, data: AssetUpdateRequest) {
     return this.request(`/raw-files/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
   }
 
@@ -366,17 +380,29 @@ export class CmpLibraryClient {
     return this.request(`/assets/${assetId}/fields`);
   }
 
-  async replaceAssetFields(assetId: string, fields: Array<{ id: string; value: unknown }>) {
+  /** Org-wide field definitions, including fields not set on any given asset. */
+  async listFieldDefinitions() {
+    return this.request('/fields?page_size=100');
+  }
+
+  /**
+   * Replaces the asset's fields (labels included). The body is a top-level array,
+   * and `type` is required. Send the complete set, with `values: []` for fields to clear.
+   */
+  async replaceAssetFields(
+    assetId: string,
+    fields: Array<{ id: string; type: string; values: unknown[] }>
+  ) {
     return this.request(`/assets/${assetId}/fields`, {
       method: 'PUT',
-      body: JSON.stringify({ data: fields }),
+      body: JSON.stringify(fields),
     });
   }
 
-  async updateAssetField(assetId: string, fieldId: string, value: unknown) {
+  async updateAssetField(assetId: string, fieldId: string, type: string, values: unknown[]) {
     return this.request(`/assets/${assetId}/fields/${fieldId}`, {
       method: 'PUT',
-      body: JSON.stringify({ value }),
+      body: JSON.stringify({ type, values }),
     });
   }
 
