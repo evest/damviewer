@@ -4,13 +4,16 @@ import { graphqlFetch } from "@/lib/graphql/client";
 import { ASSET_DETAIL_QUERY } from "@/lib/graphql/queries";
 import { AssetDetail } from "@/app/components/assets/AssetDetail";
 import { CmpDetails } from "@/app/components/assets/CmpDetails";
+import { CmpMetadataEditor } from "@/app/components/assets/CmpMetadataEditor";
+import { isCmpWriteEnabled } from "@/lib/cmp/client";
+import type { CmpAssetKind } from "@/lib/cmp/types";
 import { RenditionList } from "@/app/components/assets/RenditionList";
 import { DamImage } from "@/app/components/ui/DamImage";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Download } from "lucide-react";
 import { FileTypeIcon } from "@/app/components/ui/FileTypeIcon";
 import { isPreviewable } from "@/lib/constants";
-import { isImageAsset, isVideoAsset } from "@/lib/types/asset";
+import { isImageAsset, isRawFileAsset, isVideoAsset } from "@/lib/types/asset";
 import type { AssetDetailResponse } from "@/lib/graphql/types";
 
 export default async function AssetPage({
@@ -31,6 +34,13 @@ export default async function AssetPage({
   const renditions =
     (isImageAsset(asset) ? asset.Renditions : isVideoAsset(asset) ? asset.Renditions : null) ?? [];
   const canPreview = isPreviewable(asset.MimeType);
+  const cmpKind: CmpAssetKind | null = isImageAsset(asset)
+    ? "image"
+    : isVideoAsset(asset)
+      ? "video"
+      : isRawFileAsset(asset)
+        ? "raw_file"
+        : null;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
@@ -102,6 +112,9 @@ export default async function AssetPage({
         {/* Metadata sidebar */}
         <aside className="min-w-0 space-y-6">
           <AssetDetail asset={asset} />
+          {cmpKind && (
+            <CmpMetadataEditor assetId={asset.Id} kind={cmpKind} canEdit={isCmpWriteEnabled()} />
+          )}
           <CmpDetails assetId={asset.Id} isImage={isImageAsset(asset)} />
         </aside>
       </div>
